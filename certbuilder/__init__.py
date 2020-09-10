@@ -864,6 +864,8 @@ class CertificateBuilder(object):
                 signature_algo = 'ecdsa'
 
             signature_algorithm_id = '%s_%s' % (self._hash_algo, signature_algo)
+        else:
+            signature_algorithm_id = '%s_%s' % (self._hash_algo, "rsa") #making rsa assumption for ease
 
         # RFC 3280 4.1.2.5
         def _make_validity_time(dt):
