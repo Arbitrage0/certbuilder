@@ -817,7 +817,7 @@ class CertificateBuilder(object):
         """
 
         is_oscrypto = isinstance(signing_private_key, asymmetric.PrivateKey)
-        if not isinstance(signing_private_key, keys.PrivateKeyInfo) and not is_oscrypto:
+        if not isinstance(signing_private_key, keys.PrivateKeyInfo) and not is_oscrypto and signing_private_key is not None:
             raise TypeError(_pretty_message(
                 '''
                 signing_private_key must be an instance of
@@ -858,11 +858,12 @@ class CertificateBuilder(object):
                         ca_only_extension
                     ))
 
-        signature_algo = signing_private_key.algorithm
-        if signature_algo == 'ec':
-            signature_algo = 'ecdsa'
+        if signing_private_key is not None:
+            signature_algo = signing_private_key.algorithm
+            if signature_algo == 'ec':
+                signature_algo = 'ecdsa'
 
-        signature_algorithm_id = '%s_%s' % (self._hash_algo, signature_algo)
+            signature_algorithm_id = '%s_%s' % (self._hash_algo, signature_algo)
 
         # RFC 3280 4.1.2.5
         def _make_validity_time(dt):
@@ -907,7 +908,9 @@ class CertificateBuilder(object):
             'extensions': extensions
         })
 
-        if signing_private_key.algorithm == 'rsa':
+        if signing_private_key is None: 
+            return tbs_cert
+        elif signing_private_key.algorithm == 'rsa':
             sign_func = asymmetric.rsa_pkcs1v15_sign
         elif signing_private_key.algorithm == 'dsa':
             sign_func = asymmetric.dsa_sign
